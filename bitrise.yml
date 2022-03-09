@@ -1,0 +1,119 @@
+---
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+workflows:
+  ga_test:
+    steps:
+    - bitrise-run@0:
+        inputs:
+        - bitrise_config_path: bitrise.yml
+    envs:
+    - WORKFLOW: GA
+      opts:
+        is_expand: false
+  nightly_test:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - script@1:
+        title: Do anything with Script step
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            echo "ls"
+            ls
+
+            # or run a script from your repository, like:
+            # bash ./path/to/script.sh
+            # not just bash, e.g.:
+            # ruby ./path/to/script.rb
+    - deploy-to-bitrise-io@2: {}
+    envs:
+    - opts:
+        is_expand: false
+      WORKFLOW: snapshot
+  pr_test:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - script@1:
+        title: Do anything with Script step
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            echo "ls"
+            ls
+
+            # or run a script from your repository, like:
+            # bash ./path/to/script.sh
+            # not just bash, e.g.:
+            # ruby ./path/to/script.rb
+    - deploy-to-bitrise-io@2: {}
+    envs:
+    - opts:
+        is_expand: false
+      WORKFLOW: PR
+  primary:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - script@1:
+        title: Do anything with Script step
+        inputs:
+        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# debug
+            log\nset -x\n\n# write your script here\n$env3 = false\nrun_if: |-\n          {{getenv
+            \"WORKFLOW\" | ne \"PR\"}}\n        - content: |-\n            $env1 =
+            true\n            echo \"Workflow is PR\"\nrun_if: |-\n          {{getenv
+            \"WORKFLOW\" | ne GA\"}}\n        - content: |-\n            $env2 = true\n
+            \           echo \"Workflow is GA\"\n\nif [$env1 == true || env2 == true]\nthen
+            $env3 = true\nfi\n\n            \nrun_if: |-\n          {{enveq \"$env3\"
+            \"false\"}}\n        - content: |-\n            #!/usr/bin/env bash\n
+            \           # write your script here\n            echo \"Workflow is RC
+            or Nightly. Step runs successfully.\"\n            echo \"ls\"\n            ls\n\n#
+            or run a script from your repository, like:\n# bash ./path/to/script.sh\n#
+            not just bash, e.g.:\n# ruby ./path/to/script.rb"
+    - deploy-to-bitrise-io@2: {}
+  rc_test:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - script@1:
+        title: Do anything with Script step
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            echo "ls"
+            ls
+
+            # or run a script from your repository, like:
+            # bash ./path/to/script.sh
+            # not just bash, e.g.:
+            # ruby ./path/to/script.rb
+    - deploy-to-bitrise-io@2: {}
+    envs:
+    - opts:
+        is_expand: false
+      WORKFLOW: RC
+meta:
+  bitrise.io:
+    stack: osx-xcode-13.0.x
+    machine_type_id: g2.4core
